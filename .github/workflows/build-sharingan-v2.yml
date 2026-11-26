@@ -12,15 +12,18 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+
       - name: Extract V2 source
-        ru
+        run: unzip -q Sharingan_v2.zip
+
       - name: Build for iPhone
-        run: unzip -q Sharingan_v2.zip|
+        run: |
           xcodebuild -project Sharingan/Sharingan.xcodeproj \
             -scheme Sharingan -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+
       - name: Package IPA and verify extension
         run: |
           mkdir -p Payload
@@ -29,6 +32,7 @@ jobs:
           /usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' Payload/Sharingan.app/Info.plist | grep -qx true
           /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Payload/Sharingan.app/Info.plist | grep -qx '2.0'
           zip -qry Sharingan-V2.ipa Payload
+
       - uses: actions/upload-artifact@v4
         with:
           name: Sharingan-V2-IPA
