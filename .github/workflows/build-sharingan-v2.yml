@@ -1,0 +1,36 @@
+name: Build Sharingan V2 IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract V2 source
+        run: unzip -q Sharingan_iOS_V2.zip
+      - name: Build for iPhone
+        run: |
+          xcodebuild -project Sharingan/Sharingan.xcodeproj \
+            -scheme Sharingan -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+      - name: Package IPA and verify extension
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/Sharingan.app Payload/
+          test -d Payload/Sharingan.app/PlugIns/SharinganWidget.appex
+          /usr/libexec/PlistBuddy -c 'Print :NSSupportsLiveActivities' Payload/Sharingan.app/Info.plist | grep -qx true
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Payload/Sharingan.app/Info.plist | grep -qx '2.0'
+          zip -qry Sharingan-V2.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sharingan-V2-IPA
+          path: Sharingan-V2.ipa
+          if-no-files-found: error
