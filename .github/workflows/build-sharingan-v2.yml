@@ -13,9 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Extract V2 source
-        run: unzip -q Sharingan_iOS_V2.zip
+        ru
       - name: Build for iPhone
-        run: |
+        run: unzip -q Sharingan_v2.zip|
           xcodebuild -project Sharingan/Sharingan.xcodeproj \
             -scheme Sharingan -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
